@@ -1,29 +1,41 @@
-using AddMember.Data;
-
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Add services to the container.
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
 
-app.MapPost("/addmember", (string name, string lastname, string birthyear) =>
+var summaries = new[]
 {
-    var connectionString = builder.Configuration["ServiceBus:ConnectionString"] ?? Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
-    var queueName = builder.Configuration["ServiceBus:QueueName"] ?? Environment.GetEnvironmentVariable("SERVICE_BUS_QUEUE_NAME");
-    var serviceBus = new ServiceBus(connectionString, queueName);
-    serviceBus.SendMessageAsync(name, lastname, birthyear).GetAwaiter().GetResult();
-    return Results.Ok($"Miembro {name} agregado con éxito.");
+    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+};
+
+app.MapGet("/weatherforecast", () =>
+{
+    var forecast =  Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return forecast;
 })
-.WithName("AddMember")
-.WithOpenApi();
+.WithName("GetWeatherForecast");
 
 app.Run();
+
+record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}
