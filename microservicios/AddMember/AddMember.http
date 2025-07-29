@@ -1,6 +1,11 @@
 @AddMember_HostAddress = http://localhost:5196
 
-GET {{AddMember_HostAddress}}/weatherforecast/
+### Request for adults
+POST {{AddMember_HostAddress}}/addmember?name=Amin&lastname=Espinoza&birthyear=1985
+Content-Type: application/json
 Accept: application/json
 
-###
+### Request for children
+POST {{AddMember_HostAddress}}/addmember?name=Miranda&lastname=Espinoza&birthyear=2017
+Content-Type: application/json
+Accept: application/json
